@@ -201,7 +201,7 @@ class Resnet3DBuilder(object):
     """ResNet3D."""
 
     @staticmethod
-    def build(input_shape, num_outputs, block_fn, repetitions, reg_factor):
+    def build(input_shape, num_outputs, block_fn, multilabel, repetitions, reg_factor):
         """Instantiate a vanilla ResNet3D keras model.
 
         # Arguments
@@ -209,6 +209,7 @@ class Resnet3DBuilder(object):
             (conv_dim1, conv_dim2, conv_dim3, channels) if dim_ordering='tf'
             (filter, conv_dim1, conv_dim2, conv_dim3) if dim_ordering='th'
             num_outputs: The number of outputs at the final softmax layer
+            multilabel: boolean arg, if doing a multilabel task
             block_fn: Unit block to use {'basic_block', 'bottlenack_block'}
             repetitions: Repetitions of unit blocks
         # Returns
@@ -252,16 +253,22 @@ class Resnet3DBuilder(object):
                                             block._keras_shape[DIM3_AXIS]),
                                  strides=(1, 1, 1))(block_output)
         flatten1 = Flatten()(pool2)
-        if num_outputs > 1:
-            dense = Dense(units=num_outputs,
-                          kernel_initializer="he_normal",
-                          activation="softmax",
-                          kernel_regularizer=l2(reg_factor))(flatten1)
-        else:
+        if multilabel:
             dense = Dense(units=num_outputs,
                           kernel_initializer="he_normal",
                           activation="sigmoid",
                           kernel_regularizer=l2(reg_factor))(flatten1)
+        else:
+            if num_outputs > 1:
+                dense = Dense(units=num_outputs,
+                              kernel_initializer="he_normal",
+                              activation="softmax",
+                              kernel_regularizer=l2(reg_factor))(flatten1)
+            else:
+                dense = Dense(units=num_outputs,
+                              kernel_initializer="he_normal",
+                              activation="sigmoid",
+                              kernel_regularizer=l2(reg_factor))(flatten1)
 
         model = Model(inputs=input, outputs=dense)
         return model
@@ -273,21 +280,21 @@ class Resnet3DBuilder(object):
                                      [2, 2, 2, 2], reg_factor=reg_factor)
 
     @staticmethod
-    def build_resnet_34(input_shape, num_outputs, reg_factor=1e-4):
+    def build_resnet_34(input_shape, num_outputs, multilabel = False,reg_factor=1e-4):
         """Build resnet 34."""
-        return Resnet3DBuilder.build(input_shape, num_outputs, basic_block,
+        return Resnet3DBuilder.build(input_shape, num_outputs, basic_block, multilabel,
                                      [3, 4, 6, 3], reg_factor=reg_factor)
 
     @staticmethod
-    def build_resnet_50(input_shape, num_outputs, reg_factor=1e-4):
+    def build_resnet_50(input_shape, num_outputs, multilabel = False, reg_factor=1e-4):
         """Build resnet 50."""
-        return Resnet3DBuilder.build(input_shape, num_outputs, bottleneck,
+        return Resnet3DBuilder.build(input_shape, num_outputs, multilabel, bottleneck,
                                      [3, 4, 6, 3], reg_factor=reg_factor)
 
     @staticmethod
-    def build_resnet_101(input_shape, num_outputs, reg_factor=1e-4):
+    def build_resnet_101(input_shape, num_outputs, multilabel = False, reg_factor=1e-4):
         """Build resnet 101."""
-        return Resnet3DBuilder.build(input_shape, num_outputs, bottleneck,
+        return Resnet3DBuilder.build(input_shape, num_outputs, multilabel,  bottleneck,
                                      [3, 4, 23, 3], reg_factor=reg_factor)
 
     @staticmethod
