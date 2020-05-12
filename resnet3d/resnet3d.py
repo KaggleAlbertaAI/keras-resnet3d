@@ -288,13 +288,13 @@ class Resnet3DBuilder(object):
     @staticmethod
     def build_resnet_50(input_shape, num_outputs, multilabel = False, reg_factor=1e-4):
         """Build resnet 50."""
-        return Resnet3DBuilder.build(input_shape, num_outputs, multilabel, bottleneck,
+        return Resnet3DBuilder.build(input_shape, num_outputs,  bottleneck, multilabel,
                                      [3, 4, 6, 3], reg_factor=reg_factor)
 
     @staticmethod
     def build_resnet_101(input_shape, num_outputs, multilabel = False, reg_factor=1e-4):
         """Build resnet 101."""
-        return Resnet3DBuilder.build(input_shape, num_outputs, multilabel,  bottleneck,
+        return Resnet3DBuilder.build(input_shape, num_outputs,  bottleneck, multilabel,
                                      [3, 4, 23, 3], reg_factor=reg_factor)
 
     @staticmethod
